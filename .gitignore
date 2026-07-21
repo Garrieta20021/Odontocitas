@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Build
+dist/
+build/
+
+# Logs y caché
+*.log
+.vite/
+.cache/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Python (odontocitas-ml)
+__pycache__/
+*.pyc
+.venv/
+
+# Backups locales (env con secretos, dumps SQL y zips)
+backups/

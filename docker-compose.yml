@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: odontocitas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./odontocitas-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: odontocitas
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: odontocitas_super_secret_key_2026
+      JWT_EXPIRES_IN: 8h
+      CLIENT_URL: http://localhost:5173
+    volumes:
+      - ./odontocitas-api:/usr/src/app
+      - /usr/src/app/node_modules
+    # Crea las tablas (migrate, idempotente), verifica catálogo de tratamientos
+    # (seed, no bloqueante) y luego inicia la API.
+    command: sh -c "npm run db:migrate && (npm run db:seed || true) && npm run dev"
+
+volumes:
+  db_data:
